@@ -1,25 +1,43 @@
 package com.disq.auth.dao;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import com.disq.auth.model.UserEntity;
 import com.disq.auth.repository.Auth0Repository;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 public class OAuthDAO {
 	
-	private Auth0Repository auth0Repository;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 	
-	public OAuthDAO(Auth0Repository auth0Repository) {
-        this.auth0Repository = auth0Repository;
-    }
-	
-	public Optional<UserEntity> getUserDetails(String username) {
-	      Optional<UserEntity> userEntity = auth0Repository.findByusername(username);
-	      if(userEntity.isPresent()) {
-	    	  return userEntity;
+	public UserEntity getUserDetails(String username) {
+	      Collection<GrantedAuthority> grantedAuthoritiesList = new ArrayList<>();
+
+	      String userSQLQuery = "SELECT * FROM USERS WHERE USERNAME=?";
+	      List<UserEntity> list = jdbcTemplate.query(userSQLQuery, new String[] { username },
+	         (ResultSet rs, int rowNum) -> {
+	         
+	         UserEntity user = new UserEntity();
+	         user.setUsername(username);
+	         user.setPassword(rs.getString("PASSWORD"));
+	         return user;
+	      });
+	      if (list.size() > 0) {
+	         GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_SYSTEMADMIN");
+	         grantedAuthoritiesList.add(grantedAuthority);
+	         list.get(0).setGrantedAuthoritiesList(grantedAuthoritiesList);
+	         return list.get(0);
 	      }
-	      //TODO Grants
-	      else
-	    	  return null;
+	      return null;
 	   }
+
 }

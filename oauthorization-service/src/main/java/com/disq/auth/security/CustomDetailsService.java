@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.disq.auth.dao.OAuthDAO;
+import com.disq.auth.model.CustomUser;
+import com.disq.auth.model.UserEntity;
 
 @Service
 public class CustomDetailsService implements UserDetailsService {
@@ -14,10 +16,17 @@ public class CustomDetailsService implements UserDetailsService {
    OAuthDAO oauthDao;
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public CustomUser loadUserByUsername(String username) throws UsernameNotFoundException {
+		 UserEntity userEntity = null;
+	      try {
+	         userEntity = oauthDao.getUserDetails(username);
+	         CustomUser customUser = new CustomUser(userEntity);
+	         return customUser;
+	      } catch (Exception e) {
+	         e.printStackTrace();
+	         throw new UsernameNotFoundException("User " + username + " was not found in the database");
+	      }
+	   }
 
  
 } 

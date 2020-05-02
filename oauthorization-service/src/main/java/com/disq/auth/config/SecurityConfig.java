@@ -16,33 +16,37 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.disq.auth.security.CustomDetailsService;
-import com.disq.auth.security.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
-	 @Autowired
+	   @Autowired
 	   private CustomDetailsService customDetailsService;
+	 	
 	   @Bean
 	   public PasswordEncoder encoder() {
 	      return new BCryptPasswordEncoder();
 	   }
+	   
 	   @Override
 	   @Autowired
 	   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 	      auth.userDetailsService(customDetailsService).passwordEncoder(encoder());
 	   }
+	   
 	   @Override
 	   protected void configure(HttpSecurity http) throws Exception {
 	      http.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
 	         .sessionCreationPolicy(SessionCreationPolicy.NEVER);
 	   }
+	   
 	   @Override
 	   public void configure(WebSecurity web) throws Exception {
 	      web.ignoring();
 	   }
+	   
 	   @Override
 	   @Bean
 	   public AuthenticationManager authenticationManagerBean() throws Exception {
